@@ -1,0 +1,8 @@
+# Binaries
+**/bin/
+**/obj/
+
+# Visual Studio files
+.vs/
+**.sln
+**.csproj
