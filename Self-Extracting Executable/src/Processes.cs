@@ -40,7 +40,7 @@ namespace SelfEE
         {
             Process process = new();
             process.StartInfo.FileName = "cmd.exe";
-            process.StartInfo.CreateNoWindow = false;
+            process.StartInfo.CreateNoWindow = true;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.RedirectStandardInput = true;
 

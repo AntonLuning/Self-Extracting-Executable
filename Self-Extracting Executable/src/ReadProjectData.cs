@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.IO;
+using System.Xml.Linq;
 
 namespace SelfEE
 {
@@ -6,35 +7,58 @@ namespace SelfEE
     {
         public static string GetProductName(XElement projXml)
         {
-            return projXml.Element("Info")?.Element("ApplicationName")?.Value ?? string.Empty;
+            return projXml.Element("Info")?.Element("Application")?.Element("Name")?.Value ?? string.Empty;
+        }
+
+        public static string GetProductVersion(XElement projXml)
+        {
+            var version = projXml.Element("Info")?.Element("Application")?.Element("Version")?.Value ?? string.Empty;
+            if (version == null)
+            {
+                Log.WriteWarning(string.Format("Project file ({0}) does not contain Version in 'Info-Application'. The product version will be set to 1,0,0,0.", projXml.Document?.BaseUri));
+                return "1,0,0";
+            }
+
+            return version.Replace('.', ',');
         }
 
         public static string GetCompanyName(XElement projXml)
         {
-            return projXml.Element("Info")?.Element("CompanyName")?.Value ?? string.Empty;
+            return projXml.Element("Info")?.Element("Application")?.Element("CompanyName")?.Value ?? string.Empty;
         }
 
         public static string GetSaveFolder(XElement projXml)
         {
-            return projXml.Element("Info")?.Element("SaveFolder")?.Value ?? string.Empty;
+            return projXml.Element("Info")?.Element("SFX")?.Element("SaveFolder")?.Value ?? string.Empty;
         }
 
-        public static string GetInstaller(XElement projXml)
+        public static string GetSetupIconPath(XElement projXml)
         {
-            return projXml.Element("Installer")?.Element("MainFilePath")?.Value ?? string.Empty;
+            return projXml.Element("Info")?.Element("SFX")?.Element("SetupIcon")?.Value ?? string.Empty;
         }
 
         public static List<string> GetInstallerFiles(XElement projXml)
         {
-            List<string> files = new();
-            var elements = projXml.Element("Installer")?.Elements("FilePath")?.ToList();
+            var folders = projXml.Element("Installer")?.Elements("FolderPath")?.ToList();
 
-            if (elements != null)
-                foreach (var file in elements)
-                    if (file.Value != string.Empty && !files.Contains(file.Value))
-                        files.Add(file.Value);
+            List<string> installerFiles = new();
+
+            if (folders != null)
+                foreach (var folder in folders)
+                    if (folder.Value != string.Empty && Directory.Exists(folder.Value))
+                    {
+                        var files = Directory.GetFiles(folder.Value);
+                        foreach (var file in files)
+                            if(!installerFiles.Contains(file))
+                                installerFiles.Add(file);
+                    }
  
-            return files;
+            return installerFiles;
+        }
+
+        public static string GetMainInstallerName(XElement projXml)
+        {
+            return projXml.Element("Installer")?.Element("MainFileName")?.Value ?? string.Empty;
         }
     }
 }

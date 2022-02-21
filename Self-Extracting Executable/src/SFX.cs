@@ -20,10 +20,11 @@ namespace SelfEE
         private string _saveFolder;
         private string _executablePath;
 
-        private string _installerPath;
         private List<string> _installerFiles;
+        private string _mainInstallerPath;
+
+        private List<string> _programFiles;
         private List<string> _applicationFiles;
-        private List<string> _applicationData;
 
         public SFX()
         {
@@ -52,30 +53,45 @@ namespace SelfEE
             _productName = ReadProjectData.GetProductName(projXml);
             if (_productName == string.Empty)
             {
-                Log.WriteError(String.Format("Project file ({0}.xml) must contain ApplicationName in Info.", projXml.Name));
+                Log.WriteError(String.Format("Project file ({0}) must contain Name in 'Info-Application'.", projXml.Document?.BaseUri));
                 return false;
             }
 
             _saveFolder = ReadProjectData.GetSaveFolder(projXml);
             if (_saveFolder == string.Empty)
             {
-                Log.WriteError(String.Format("Project file ({0}.xml) must contain SaveFolder in Info.", projXml.Name));
+                Log.WriteError(String.Format("Project file ({0}) must contain SaveFolder in 'Info-SFX'.", projXml.Document?.BaseUri));
                 return false;
             }
 
             _executablePath = Path.Combine(_saveFolder, _productName + "_Setup.exe");
             File.Delete(_executablePath);
 
-            _installerPath = ReadProjectData.GetInstaller(projXml);
-            if (_installerPath == string.Empty)
+            _installerFiles = ReadProjectData.GetInstallerFiles(projXml);
+            if (_installerFiles.Count == 0)
             {
-                Log.WriteError(String.Format("Project file ({0}.xml) must contain a FilePath in Installer.", projXml.Name));
+                Log.WriteError(String.Format("Project file ({0}) must contain a FolderPath in 'Installer' with the installer files.", projXml.Document?.BaseUri));
                 return false;
             }
 
-            _installerFiles = ReadProjectData.GetInstallerFiles(projXml);
-            _installerFiles.Add(_installerPath);
+            string insName = ReadProjectData.GetMainInstallerName(projXml);
+            if (insName == string.Empty)
+            {
+                Log.WriteError(String.Format("Project file ({0}) must contain a MainFileName in 'Installer'.", projXml.Document?.BaseUri));
+                return false;
+            }
 
+            foreach (var filePath in _installerFiles)
+                if (Path.GetFileName(filePath) == insName)
+                {
+                    _mainInstallerPath = filePath;
+                    break;
+                }
+            if (_mainInstallerPath == string.Empty)
+            {
+                Log.WriteError(String.Format("The MainFileName in 'Installer' (in {0}) must be located in the directory FolderPath in 'Installer'.", projXml.Document?.BaseUri));
+                return false;
+            }
 
             if (!ZipApplicationFiles())
             {
@@ -83,7 +99,7 @@ namespace SelfEE
                 return false;
             }
 
-            CreateArchive(CONFIG_FILE, Path.GetFileName(_installerPath), false, "Run XCC Setup");
+            CreateArchive(CONFIG_FILE, Path.GetFileName(_mainInstallerPath), false, "Run XCC Setup");
             Thread.Sleep(500);    // To make sure that the files are released before the upcoming process
 
             if (!CreateSFX(projXml))
@@ -147,6 +163,14 @@ namespace SelfEE
                 string.Format("cd \"{0}\"", _baseDir),
                 string.Format("\"{0}\" -open {1}.rc -save {1}.res -action compile -log con", _resourceHacker, versionInfo),
                 string.Format("\"{0}\" -open \"{1}\" -save \"{1}\" -res {2}.res -action addoverwrite -mask VersionInfo,, -log con", _resourceHacker, _executablePath, versionInfo)
+            });
+
+            string iconPath = ReadProjectData.GetSetupIconPath(projXml);
+
+            Processes.RunCommands(new string[] {
+                string.Format("cd \"{0}\"", _baseDir),
+                string.Format("\"{0}\" -open \"{1}\" -save \"{1}\" -action addoverwrite -res \"{2}\" -mask ICONGROUP, MAINICON, 0", _resourceHacker, _executablePath, iconPath),
+                "ie4uinit.exe -ClearIconCache"
             });
 
             Log.WriteInfo("Self-extracting executable generated.");

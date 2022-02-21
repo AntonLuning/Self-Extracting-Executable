@@ -13,12 +13,13 @@ namespace SelfEE
 
         public static string GenerateResFile(XElement projXml, string baseDir)
         {
-            string fileVersion = "1,0,0,1";     // temp
-            string productVersion = "1,0,0,2";  // temp
+            string fileVersion = "1,0,0,0";
+            string productVersion = ReadProjectData.GetProductVersion(projXml);
+            int numOfCommas = productVersion.Count(c => c == ',');
+            for (int i = numOfCommas; i < 3; i++)
+                productVersion += ",0";
 
-            string filePath = Path.Combine(baseDir, FILE_NAME + ".rc");
-
-            using (StreamWriter sw = File.CreateText(filePath))
+            using (StreamWriter sw = File.CreateText(Path.Combine(baseDir, FILE_NAME + ".rc")))
             {
                 sw.WriteLine("");
                 sw.WriteLine("1 VERSIONINFO");
@@ -34,7 +35,7 @@ namespace SelfEE
                 sw.WriteLine("\t\tVALUE \"CompanyName\", \"" + ReadProjectData.GetCompanyName(projXml) + "\"");
                 sw.WriteLine("\t\tVALUE \"FileDescription\", \"Setup program for " + ReadProjectData.GetProductName(projXml) + "\"");
                 sw.WriteLine("\t\tVALUE \"FileVersion\", \"" + fileVersion + "\"");
-                sw.WriteLine("\t\tVALUE \"ProductName\", \"" + ReadProjectData.GetProductName(projXml) + "_Setup\"");
+                sw.WriteLine("\t\tVALUE \"ProductName\", \"" + ReadProjectData.GetProductName(projXml));
                 sw.WriteLine("\t\tVALUE \"ProductVersion\", \"" + productVersion + "\"");
                 sw.WriteLine("\t}");
                 sw.WriteLine("}");

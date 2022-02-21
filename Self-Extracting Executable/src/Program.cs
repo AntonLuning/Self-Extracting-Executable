@@ -8,19 +8,19 @@ namespace SelfEE
     {
         static void Main()
         {
-            XDocument xmlDoc = XDocument.Load(@"Projects\Project1.xml");    // This is where the project is determined
-            var projXml = xmlDoc.Root;
+            XDocument xmlDoc = XDocument.Load(@"Projects\ExampleProject.xml");    // This is where the project is determined
+            XElement? projXml = xmlDoc.Root;
 
             if (projXml != null && new SFX().Generate(projXml))
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.Write("\nSucceeded in generating Self-extracting executable. ");
+                Console.Write("\nGenerating Self-extracting executable SUCCEEDED. ");
                 Console.ResetColor();
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write("\nFailed to generate Self-extracting executable. ");
+                Console.Write("\nGenerating Self-extracting executable FAILED. ");
                 Console.ResetColor();
             }
 

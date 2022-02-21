@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Project>
+	<!-- General info for the Application and SFX. -->
+	<Info>
+		<Application>
+			<CompanyName>Buisness Inc.</CompanyName>
+			<Name>MyApp</Name>
+			<Version>1.3.15</Version>	
+		</Application>
+		<SFX>
+			<SetupIcon>C:\Dev\Self-Extracting Executable\TestResources\test_icon.ico</SetupIcon>
+			<SaveFolder>C:\Dev</SaveFolder><!-- Where the generated SFX will be saved. -->
+		</SFX>
+	</Info>
+
+	<!-- The installer for the application. -->
+	<Installer>
+		<FolderPath>C:\Dev\TestWinFormApp\TestWinFormApp\bin\Debug</FolderPath><!-- Where all the files for the installer is. -->
+		<MainFileName>TestWinFormApp.exe</MainFileName><!-- The name of the main installer application (file to be runned first). -->
+	</Installer>
+	
+	<!-- All the .exe files needed for the application. Additional files such as libaries and config files will be automatically added. -->
+	<ProgramFiles>
+		<ExeFilePath></ExeFilePath>
+		<ExeFilePath></ExeFilePath>
+	</ProgramFiles>
+
+	<!-- All the application files to come along with the application (databases, etc.). -->
+	<ApplicationFiles>
+		<FolderPath></FolderPath><!-- All file inside of folder. -->
+		<FilePath></FilePath><!-- Specific file. -->
+	</ApplicationFiles>
+
+	<!-- File associations to be registered with the application during install. -->
+	<FileAssociations>
+		<Extension>
+			<Name>.tmp</Name>
+			<Default>True</Default><!-- If the file extension should, by default, be opened with the application. -->
+		</Extension>
+		<Extension>
+			<Name>.mpp</Name>
+			<Default>False</Default>
+		</Extension>
+	</FileAssociations>
+</Project>
